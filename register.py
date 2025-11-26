@@ -57,36 +57,59 @@ class Ui_regui(object):
         self.label.setText(_translate("regui", "Логин"))
         self.label_2.setText(_translate("regui", "Пароль"))
 
-    def showPassword(self,checked):
+    def showPassword(self, checked):
         if checked:
             self.lineEdit_2.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
         else:
             self.lineEdit_2.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
 
     def auth(self):
-        login = self.lineEdit.text()
-        password = self.lineEdit_2.text()
+        login = self.lineEdit.text().strip()
+        password = self.lineEdit_2.text().strip()
 
-        c.execute("SELECT password,UserID FROM autorization WHERE login = %s", (login,))
+        print(f"Попытка авторизации: логин='{login}', пароль='{password}'")
+
+        # Проверяем существование пользователя
+        c.execute("SELECT Login, Password, UserID FROM autorization WHERE Login = %s", (login,))
         result = c.fetchone()
 
-        if result == None:
+        print(f"Результат из БД: {result}")
+
+        if result is None:
+            print("Пользователь не найден")
             QMessageBox.critical(None, "Ошибка", "Такого пользователя не существует", QMessageBox.StandardButton.Ok)
-        elif result[0] != password:
+            return
+
+        db_login, db_password, user_id = result
+
+        if db_password != password:
+            print(f"Неверный пароль. Ожидалось: '{db_password}', введено: '{password}'")
             QMessageBox.critical(None, "Ошибка", "Неверный пароль", QMessageBox.StandardButton.Ok)
-        else:
-            try:
-                from window_manager import WindowManager
-                window_manager = WindowManager()
-                window_manager.set_current_userID(result[1])
-                main_window = self.centralwidget.window()
-                main_window.close()
+            return
 
+        # Разрешаем доступ только для пользователя root
+        if login.lower() != "root":
+            QMessageBox.critical(None, "Ошибка",
+                               "Пользователь не найден",
+                               QMessageBox.StandardButton.Ok)
+            return
 
-                window_manager.show_mainsklad()
+        try:
+            # Получаем экземпляр WindowManager
+            from window_manager import WindowManager
+            window_manager = WindowManager()
+            window_manager.set_current_userID(user_id)
 
-            except Exception as e:
-                QMessageBox.critical(None, "Ошибка", f"Не удалось открыть главное окно: {str(e)}")
+            # Закрываем текущее окно
+            main_window = self.centralwidget.window()
+            main_window.close()
+
+            # Открываем главное окно
+            window_manager.show_mainsklad()
+
+        except Exception as e:
+            print(f"Ошибка при открытии главного окна: {e}")
+            QMessageBox.critical(None, "Ошибка", f"Не удалось открыть главное окно: {str(e)}")
 
 if __name__ == "__main__":
     import sys

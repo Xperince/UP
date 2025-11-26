@@ -188,6 +188,16 @@ class Ui_mainsklad(object):
 
     def load_user_data(self):
         try:
+            from window_manager import WindowManager
+
+            window_manager = WindowManager()
+            current_user_id = window_manager.get_current_userID()
+
+            if current_user_id is None:
+                self.label_4.setText("Не авторизован")
+                self.label_6.setText("Гость")
+                return
+
             config = self.DB_CONFIG
 
             query = f"""
@@ -197,11 +207,10 @@ class Ui_mainsklad(object):
                 r.{config['col_roles_value']}
             FROM {config['table_users']} u
             JOIN {config['table_roles']} r ON u.{config['col_users_role']} = r.{config['col_roles_id']}
-            ORDER BY u.{config['col_reference_id']} ASC
-            LIMIT 1
+            WHERE u.{config['col_reference_id']} = %s
             """
 
-            c.execute(query)
+            c.execute(query, (current_user_id,))
             user_data = c.fetchone()
 
             if user_data:
