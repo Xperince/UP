@@ -318,8 +318,17 @@ class Ui_AddTovar(object):
             msg.exec()
 
     def load_characteristics(self):
-        """Загружает характеристики из таблицы characters в charactersTable"""
+
         try:
+            # Сохраняем текущий выбор характеристик перед обновлением
+            selected_characteristics = set()
+            for row in range(self.charactersTable.rowCount()):
+                checkbox_item = self.charactersTable.item(row, 0)
+                characteristic_item = self.charactersTable.item(row, 1)
+                if checkbox_item and characteristic_item:
+                    if checkbox_item.checkState() == QtCore.Qt.CheckState.Checked:
+                        selected_characteristics.add(characteristic_item.text())
+
             # Очищаем таблицу перед загрузкой
             self.charactersTable.setRowCount(0)
 
@@ -336,7 +345,13 @@ class Ui_AddTovar(object):
                 # Создаем чекбокс для первого столбца
                 checkbox_item = QtWidgets.QTableWidgetItem()
                 checkbox_item.setFlags(QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
-                checkbox_item.setCheckState(QtCore.Qt.CheckState.Unchecked)
+
+                # Восстанавливаем состояние чекбокса, если характеристика была выбрана ранее
+                if char_name in selected_characteristics:
+                    checkbox_item.setCheckState(QtCore.Qt.CheckState.Checked)
+                else:
+                    checkbox_item.setCheckState(QtCore.Qt.CheckState.Unchecked)
+
                 self.charactersTable.setItem(i, 0, checkbox_item)
 
                 # Добавляем название характеристики во второй столбец
@@ -408,7 +423,7 @@ class Ui_AddTovar(object):
             print(f"Ошибка при загрузке характеристик товара: {e}")
 
     def add_new_characteristic(self):
-        """Добавляет новую характеристику в БД"""
+
         try:
             # Получаем текст из поля ввода
             characteristic_name = self.newCharName.text().strip()
@@ -447,7 +462,7 @@ class Ui_AddTovar(object):
             # Очищаем поле ввода
             self.newCharName.clear()
 
-            # Обновляем список характеристик
+            # Обновляем список характеристик (сохраняя текущий выбор)
             self.load_characteristics()
 
             # Показываем сообщение об успехе
