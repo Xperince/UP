@@ -24,7 +24,7 @@ class WindowManager:
         return self.current_user_id
 
     def show_mainsklad(self):
-        """Показать главное окно склада"""
+
         from mainsklad import Ui_mainsklad
 
         if self.current_window:
@@ -38,8 +38,8 @@ class WindowManager:
         self.mainsklad_window.show()
 
     def show_registration(self):
-        """Показать окно регистрации"""
-        from register import Ui_regui  # ← исправь на правильное имя класса
+
+        from register import Ui_regui
 
         if self.current_window:
             self.current_window.close()
@@ -52,6 +52,6 @@ class WindowManager:
         self.reg_window.show()
 
     def run(self):
-        """Запуск приложения"""
+
         self.show_registration()
         sys.exit(self.app.exec())

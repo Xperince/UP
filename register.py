@@ -69,7 +69,7 @@ class Ui_regui(object):
 
         print(f"Попытка авторизации: логин='{login}', пароль='{password}'")
 
-        # Проверяем существование пользователя
+
         c.execute("SELECT Login, Password, UserID FROM autorization WHERE Login = %s", (login,))
         result = c.fetchone()
 
@@ -87,7 +87,7 @@ class Ui_regui(object):
             QMessageBox.critical(None, "Ошибка", "Неверный пароль", QMessageBox.StandardButton.Ok)
             return
 
-        # Разрешаем доступ только для пользователя root
+
         if login.lower() != "root":
             QMessageBox.critical(None, "Ошибка",
                                "Пользователь не найден",
@@ -95,16 +95,16 @@ class Ui_regui(object):
             return
 
         try:
-            # Получаем экземпляр WindowManager
+
             from window_manager import WindowManager
             window_manager = WindowManager()
             window_manager.set_current_userID(user_id)
 
-            # Закрываем текущее окно
+
             main_window = self.centralwidget.window()
             main_window.close()
 
-            # Открываем главное окно
+
             window_manager.show_mainsklad()
 
         except Exception as e:

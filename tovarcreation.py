@@ -7,7 +7,7 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
-from connector import c, db  # Импортируем соединение с БД
+from connector import c, db
 
 
 class Ui_AddTovar(object):
@@ -131,54 +131,49 @@ class Ui_AddTovar(object):
         self.newTypeGroup.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(AddTovar)
 
-        # ДОБАВЛЯЕМ ПОДКЛЮЧЕНИЕ СИГНАЛОВ ПОСЛЕ setupUi
+
         self.setup_connections()
 
     def setup_connections(self):
 
-        # Скрываем newTypeGroup при запуске
+
         self.newTypeGroup.setVisible(False)
 
-        # Подключаем кнопку addNewType для показа newTypeGroup
+
         self.addNewType.clicked.connect(self.show_new_type_group)
 
-        # Подключаем кнопку cancelChar для удаления последней добавленной характеристики
+
         self.cancelChar.clicked.connect(self.remove_last_characteristic)
 
-        # Подключаем кнопку addNewCharBtn для добавления новой характеристики
+
         self.addNewCharBtn.clicked.connect(self.add_new_characteristic)
 
-        # Подключаем кнопку addTypeBtn для добавления нового типа товара
+
         self.addTypeBtn.clicked.connect(self.add_new_tovar_type)
 
-        # Подключаем кнопку addTovarBtn для добавления товара в систему
-        self.addTovarBtn.clicked.connect(self.add_tovar_to_system)  # ДОБАВЛЕНО
+        self.addTovarBtn.clicked.connect(self.add_tovar_to_system)
 
-        # Подключаем изменение выбора типа товара для загрузки характеристик
+
         self.tovarTypeBox.currentTextChanged.connect(self.load_tovar_characteristics)
 
-        # Загружаем данные в комбобоксы при запуске
+
         self.load_manufacturers()
         self.load_tovar_types()
         self.load_garanty_types()
 
-        # Список для хранения ID добавленных характеристик в текущей сессии
         self.added_characteristics_ids = []
 
     def show_new_type_group(self):
-        """Показывает newTypeGroup при нажатии кнопки addNewType"""
-        self.newTypeGroup.setVisible(True)
-        # Увеличиваем высоту окна, чтобы вместить newTypeGroup
-        self.groupBox.resize(841, 701)  # Возвращаем исходную высоту
 
-        # Очищаем список добавленных характеристик при открытии окна
+        self.newTypeGroup.setVisible(True)
+        self.groupBox.resize(841, 701)
         self.added_characteristics_ids.clear()
 
-        # Загружаем характеристики из БД
+
         self.load_characteristics()
 
     def remove_last_characteristic(self):
-        """Удаляет последнюю добавленную характеристику из БД"""
+
         try:
             if not self.added_characteristics_ids:
                 msg = QtWidgets.QMessageBox()
@@ -188,27 +183,27 @@ class Ui_AddTovar(object):
                 msg.exec()
                 return
 
-            # Получаем ID последней добавленной характеристики
+
             last_char_id = self.added_characteristics_ids[-1]
 
-            # Получаем название характеристики для отображения
+
             char_query = "SELECT Value FROM characters WHERE ID = %s"
             c.execute(char_query, (last_char_id,))
             char_name_result = c.fetchone()
             char_name = char_name_result[0] if char_name_result else "неизвестная характеристика"
 
-            # Удаляем характеристику из БД
+
             delete_query = "DELETE FROM characters WHERE ID = %s"
             c.execute(delete_query, (last_char_id,))
             db.commit()
 
-            # Удаляем ID из списка добавленных
+
             self.added_characteristics_ids.pop()
 
-            # Обновляем список характеристик
+
             self.load_characteristics()
 
-            # Показываем сообщение об успехе
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
             msg.setText(f"Характеристика '{char_name}' удалена")
@@ -219,7 +214,7 @@ class Ui_AddTovar(object):
 
         except Exception as e:
             print(f"Ошибка при удалении характеристики: {e}")
-            # Показываем сообщение об ошибке
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Critical)
             msg.setText("Ошибка при удалении характеристики")
@@ -228,20 +223,20 @@ class Ui_AddTovar(object):
             msg.exec()
 
     def load_manufacturers(self):
-        """Загрузка производителей из БД в manufacturerCombobox"""
+
         try:
-            # Очищаем комбобокс перед заполнением
+
             self.manufacturerCombobox.clear()
 
-            # Добавляем пустой элемент
+
             self.manufacturerCombobox.addItem("")
 
-            # Запрос к базе данных для получения производителей
+
             query = "SELECT Value FROM manufacturer ORDER BY Value"
             c.execute(query)
             manufacturers = c.fetchall()
 
-            # Заполняем комбобокс данными из БД
+
             for manufacturer in manufacturers:
                 self.manufacturerCombobox.addItem(manufacturer[0])
 
@@ -249,7 +244,7 @@ class Ui_AddTovar(object):
 
         except Exception as e:
             print(f"Ошибка при загрузке производителей: {e}")
-            # Можно добавить сообщение об ошибке
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
             msg.setText("Ошибка загрузки производителей")
@@ -258,20 +253,19 @@ class Ui_AddTovar(object):
             msg.exec()
 
     def load_tovar_types(self):
-        """Загрузка типов товаров из БД в tovarTypeBox"""
+
         try:
-            # Очищаем комбобокс перед заполнением
+
             self.tovarTypeBox.clear()
 
-            # Добавляем пустой элемент
+
             self.tovarTypeBox.addItem("")
 
-            # Запрос к базе данных для получения типов товаров
+
             query = "SELECT Value FROM typetovar ORDER BY Value"
             c.execute(query)
             tovar_types = c.fetchall()
 
-            # Заполняем комбобокс данными из БД
             for tovar_type in tovar_types:
                 self.tovarTypeBox.addItem(tovar_type[0])
 
@@ -279,7 +273,7 @@ class Ui_AddTovar(object):
 
         except Exception as e:
             print(f"Ошибка при загрузке типов товаров: {e}")
-            # Можно добавить сообщение об ошибке
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
             msg.setText("Ошибка загрузки типов товаров")
@@ -290,18 +284,17 @@ class Ui_AddTovar(object):
     def load_garanty_types(self):
 
         try:
-            # Очищаем комбобокс перед заполнением
+
             self.garantyType.clear()
 
-            # Добавляем пустой элемент
+
             self.garantyType.addItem("")
 
-            # Запрос к базе данных для получения типов гарантий из таблицы garantytype
             query = "SELECT Value FROM garantytype ORDER BY Value"
             c.execute(query)
             garanty_types = c.fetchall()
 
-            # Заполняем комбобокс данными из БД
+
             for garanty_type in garanty_types:
                 self.garantyType.addItem(garanty_type[0])
 
@@ -309,7 +302,7 @@ class Ui_AddTovar(object):
 
         except Exception as e:
             print(f"Ошибка при загрузке типов гарантий: {e}")
-            # Можно добавить сообщение об ошибке
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
             msg.setText("Ошибка загрузки типов гарантий")
@@ -320,7 +313,7 @@ class Ui_AddTovar(object):
     def load_characteristics(self):
 
         try:
-            # Сохраняем текущий выбор характеристик перед обновлением
+
             selected_characteristics = set()
             for row in range(self.charactersTable.rowCount()):
                 checkbox_item = self.charactersTable.item(row, 0)
@@ -329,24 +322,21 @@ class Ui_AddTovar(object):
                     if checkbox_item.checkState() == QtCore.Qt.CheckState.Checked:
                         selected_characteristics.add(characteristic_item.text())
 
-            # Очищаем таблицу перед загрузкой
+
             self.charactersTable.setRowCount(0)
 
-            # Запрос к базе данных для получения характеристик
             query = "SELECT ID, Value FROM characters ORDER BY Value"
             c.execute(query)
             characteristics = c.fetchall()
 
-            # Устанавливаем количество строк в таблице
+
             self.charactersTable.setRowCount(len(characteristics))
 
-            # Заполняем таблицу данными
+
             for i, (char_id, char_name) in enumerate(characteristics):
-                # Создаем чекбокс для первого столбца
+
                 checkbox_item = QtWidgets.QTableWidgetItem()
                 checkbox_item.setFlags(QtCore.Qt.ItemFlag.ItemIsUserCheckable | QtCore.Qt.ItemFlag.ItemIsEnabled)
-
-                # Восстанавливаем состояние чекбокса, если характеристика была выбрана ранее
                 if char_name in selected_characteristics:
                     checkbox_item.setCheckState(QtCore.Qt.CheckState.Checked)
                 else:
@@ -354,16 +344,16 @@ class Ui_AddTovar(object):
 
                 self.charactersTable.setItem(i, 0, checkbox_item)
 
-                # Добавляем название характеристики во второй столбец
+
                 name_item = QtWidgets.QTableWidgetItem(str(char_name))
-                name_item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled)  # Только для чтения
+                name_item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled)
                 self.charactersTable.setItem(i, 1, name_item)
 
             print(f"Загружено {len(characteristics)} характеристик из БД")
 
         except Exception as e:
             print(f"Ошибка при загрузке характеристик: {e}")
-            # Показываем сообщение об ошибке
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
             msg.setText("Ошибка загрузки характеристик")
@@ -374,14 +364,14 @@ class Ui_AddTovar(object):
     def load_tovar_characteristics(self):
 
         try:
-            # Очищаем таблицу перед загрузкой
+
             self.tovar_characters.setRowCount(0)
 
             selected_type = self.tovarTypeBox.currentText()
             if not selected_type:
                 return
 
-            # Получаем ID выбранного типа товара
+
             type_query = "SELECT ID FROM typetovar WHERE Value = %s"
             c.execute(type_query, (selected_type,))
             type_result = c.fetchone()
@@ -391,7 +381,7 @@ class Ui_AddTovar(object):
 
             type_id = type_result[0]
 
-            # Получаем характеристики для этого типа товара из таблицы characters через typecharlist
+
             query = """
             SELECT c.ID, c.Value
             FROM characters c
@@ -402,17 +392,17 @@ class Ui_AddTovar(object):
             c.execute(query, (type_id,))
             characteristics = c.fetchall()
 
-            # Устанавливаем количество строк в таблице
+
             self.tovar_characters.setRowCount(len(characteristics))
 
-            # Заполняем таблицу данными с возможностью редактирования значений
+
             for i, (char_id, char_name) in enumerate(characteristics):
-                # Добавляем название характеристики в первый столбец (только для чтения)
+
                 name_item = QtWidgets.QTableWidgetItem(str(char_name))
-                name_item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled)  # Только для чтения
+                name_item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled)
                 self.tovar_characters.setItem(i, 0, name_item)
 
-                # Добавляем поле для ввода значения характеристики во второй столбец
+
                 value_item = QtWidgets.QTableWidgetItem("")
                 value_item.setFlags(QtCore.Qt.ItemFlag.ItemIsEnabled | QtCore.Qt.ItemFlag.ItemIsEditable)
                 self.tovar_characters.setItem(i, 1, value_item)
@@ -425,10 +415,10 @@ class Ui_AddTovar(object):
     def add_new_characteristic(self):
 
         try:
-            # Получаем текст из поля ввода
+
             characteristic_name = self.newCharName.text().strip()
 
-            # Проверяем, что поле не пустое
+
             if not characteristic_name:
                 msg = QtWidgets.QMessageBox()
                 msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
@@ -437,7 +427,6 @@ class Ui_AddTovar(object):
                 msg.exec()
                 return
 
-            # Проверяем, существует ли уже такая характеристика
             check_query = "SELECT ID FROM characters WHERE Value = %s"
             c.execute(check_query, (characteristic_name,))
             existing_char = c.fetchone()
@@ -450,22 +439,22 @@ class Ui_AddTovar(object):
                 msg.exec()
                 return
 
-            # Сохраняем характеристику в БД
+
             insert_query = "INSERT INTO characters (Value) VALUES (%s)"
             c.execute(insert_query, (characteristic_name,))
-            db.commit()  # Сохраняем изменения в БД
+            db.commit()
 
-            # Получаем ID новой характеристики и сохраняем его
+
             new_char_id = c.lastrowid
             self.added_characteristics_ids.append(new_char_id)
 
-            # Очищаем поле ввода
+
             self.newCharName.clear()
 
-            # Обновляем список характеристик (сохраняя текущий выбор)
+
             self.load_characteristics()
 
-            # Показываем сообщение об успехе
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
             msg.setText("Характеристика успешно добавлена")
@@ -476,7 +465,7 @@ class Ui_AddTovar(object):
 
         except Exception as e:
             print(f"Ошибка при добавлении характеристики: {e}")
-            # Показываем сообщение об ошибке
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Critical)
             msg.setText("Ошибка при добавлении характеристики")
@@ -485,12 +474,12 @@ class Ui_AddTovar(object):
             msg.exec()
 
     def add_new_tovar_type(self):
-        """Добавляет новый тип товара в БД при нажатии кнопки addTypeBtn"""
+
         try:
-            # Получаем текст из поля ввода
+
             type_name = self.newTypeName.text().strip()
 
-            # Проверяем, что поле не пустое
+
             if not type_name:
                 msg = QtWidgets.QMessageBox()
                 msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
@@ -499,7 +488,7 @@ class Ui_AddTovar(object):
                 msg.exec()
                 return
 
-            # Проверяем, существует ли уже такой тип товара
+
             check_query = "SELECT ID FROM typetovar WHERE Value = %s"
             c.execute(check_query, (type_name,))
             existing_type = c.fetchone()
@@ -512,34 +501,34 @@ class Ui_AddTovar(object):
                 msg.exec()
                 return
 
-            # Сохраняем тип товара в БД
+
             insert_query = "INSERT INTO typetovar (Value) VALUES (%s)"
             c.execute(insert_query, (type_name,))
 
-            # Получаем ID нового типа товара
+
             new_type_id = c.lastrowid
 
-            # Добавляем связи с выбранными характеристиками
+
             self.add_type_characteristics(new_type_id)
 
-            db.commit()  # Сохраняем изменения в БД
+            db.commit()
 
-            # Очищаем поле ввода
+
             self.newTypeName.clear()
 
-            # Обновляем список типов товаров
+
             self.load_tovar_types()
 
-            # Сбрасываем выбор характеристик
+
             self.reset_characteristics_selection()
 
-            # Очищаем список добавленных характеристик
+
             self.added_characteristics_ids.clear()
 
-            # Скрываем newTypeGroup после успешного добавления
+
             self.hide_new_type_group()
 
-            # Показываем сообщение об успехе
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
             msg.setText("Тип товара успешно добавлен")
@@ -550,7 +539,7 @@ class Ui_AddTovar(object):
 
         except Exception as e:
             print(f"Ошибка при добавлении типа товара: {e}")
-            # Показываем сообщение об ошибке
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Critical)
             msg.setText("Ошибка при добавлении типа товара")
@@ -561,16 +550,16 @@ class Ui_AddTovar(object):
     def add_type_characteristics(self, type_id):
         """Добавляет связи между типом товара и выбранными характеристиками"""
         try:
-            # Проходим по всем строкам таблицы характеристик
+
             for row in range(self.charactersTable.rowCount()):
                 checkbox_item = self.charactersTable.item(row, 0)
                 characteristic_item = self.charactersTable.item(row, 1)
 
-                # Проверяем, отмечен ли чекбокс
+
                 if checkbox_item and checkbox_item.checkState() == QtCore.Qt.CheckState.Checked:
                     characteristic_name = characteristic_item.text()
 
-                    # Получаем ID характеристики по названию
+
                     char_query = "SELECT ID FROM characters WHERE Value = %s"
                     c.execute(char_query, (characteristic_name,))
                     char_result = c.fetchone()
@@ -578,7 +567,7 @@ class Ui_AddTovar(object):
                     if char_result:
                         char_id = char_result[0]
 
-                        # Добавляем связь в таблицу typecharlist
+
                         insert_query = "INSERT INTO typecharlist (TypeID, CharID) VALUES (%s, %s)"
                         c.execute(insert_query, (type_id, char_id))
                         print(f"Добавлена связь: TypeID={type_id}, CharID={char_id}")
@@ -588,17 +577,17 @@ class Ui_AddTovar(object):
             raise e
 
     def reset_characteristics_selection(self):
-        """Сбрасывает выбор всех характеристик"""
+
         for row in range(self.charactersTable.rowCount()):
             checkbox_item = self.charactersTable.item(row, 0)
             if checkbox_item:
                 checkbox_item.setCheckState(QtCore.Qt.CheckState.Unchecked)
 
     def hide_new_type_group(self):
-        """Скрывает newTypeGroup"""
+
         self.newTypeGroup.setVisible(False)
-        # Уменьшаем высоту окна, так как newTypeGroup скрыт
-        self.groupBox.resize(841, 200)  # Уменьшаем высоту groupBox
+
+        self.groupBox.resize(841, 200)
 
     def retranslateUi(self, AddTovar):
         _translate = QtCore.QCoreApplication.translate
@@ -627,17 +616,17 @@ class Ui_AddTovar(object):
         self.addNewCharBtn.setText(_translate("AddTovar", "Добавить"))
         self.addTypeBtn.setText(_translate("AddTovar", "Применить изменения"))
         self.cancelChar.setText(_translate("AddTovar", "Отменить действие"))
-        # ИСПРАВЛЕНИЕ: Добавлено название для второй вкладки
+
         self.newTypeGroup.setTabText(self.newTypeGroup.indexOf(self.newTypeGroupPage1), _translate("AddTovar", "Новый тип товара"))
-    # Добавим этот метод в класс Ui_AddTovar
+
 
     def add_tovar_to_system(self):
         try:
-            # Проверяем обязательные поля
+
             if not self.nameEdit.text().strip():
                 msg = QtWidgets.QMessageBox()
                 msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
-                msg.setText("Введите наименование товара")
+                msg.setText("Введите данные товара")
                 msg.setWindowTitle("Ошибка")
                 msg.exec()
                 return
@@ -650,19 +639,19 @@ class Ui_AddTovar(object):
                 msg.exec()
                 return
 
-            # Получаем данные из полей ввода
+
             name = self.nameEdit.text().strip()
             manufacturer = self.manufacturerCombobox.currentText()
             price = self.priceSpin.value()
             tovar_type = self.tovarTypeBox.currentText()
             quantity = self.countSpin.value()
 
-            # Данные о гарантии
+
             has_garanty = self.garantyCheckbox.isChecked()
             garanty_period = self.garantySpin.value() if has_garanty else 0
             garanty_type = self.garantyType.currentText() if has_garanty else ""
 
-            # Получаем ID производителя
+
             manufacturer_id = None
             if manufacturer:
                 query = "SELECT ID FROM manufacturer WHERE Value = %s"
@@ -671,7 +660,7 @@ class Ui_AddTovar(object):
                 if result:
                     manufacturer_id = result[0]
 
-            # Получаем ID типа товара
+
             type_query = "SELECT ID FROM typetovar WHERE Value = %s"
             c.execute(type_query, (tovar_type,))
             type_result = c.fetchone()
@@ -684,7 +673,7 @@ class Ui_AddTovar(object):
                 return
             type_id = type_result[0]
 
-            # Получаем ID типа гарантии
+
             garanty_type_id = None
             if garanty_type:
                 query = "SELECT ID FROM garantytype WHERE Value = %s"
@@ -693,7 +682,7 @@ class Ui_AddTovar(object):
                 if result:
                     garanty_type_id = result[0]
 
-            # Добавляем товар в таблицу tovar с правильными именами столбцов
+
             insert_tovar_query = """
             INSERT INTO tovar (Name, ManufacturerID, TypeID, CostValue, GarantyValue, GarantyTypeID, Count)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -701,12 +690,12 @@ class Ui_AddTovar(object):
             c.execute(insert_tovar_query, (name, manufacturer_id, type_id, price, garanty_period, garanty_type_id, quantity))
             tovar_id = c.lastrowid
 
-            # Сохраняем значения характеристик
+
             self.save_tovar_characteristics(tovar_id, type_id)
 
             db.commit()
 
-            # Очищаем поля после успешного сохранения
+
             self.nameEdit.clear()
             self.manufacturerCombobox.setCurrentIndex(0)
             self.tovarTypeBox.setCurrentIndex(0)
@@ -716,10 +705,10 @@ class Ui_AddTovar(object):
             self.garantySpin.setValue(0)
             self.garantyType.setCurrentIndex(0)
 
-            # Очищаем таблицу характеристик
+
             self.tovar_characters.setRowCount(0)
 
-            # Показываем сообщение об успехе
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Information)
             msg.setText("Товар успешно добавлен в систему")
@@ -730,7 +719,7 @@ class Ui_AddTovar(object):
 
         except Exception as e:
             print(f"Ошибка при добавлении товара: {e}")
-            # Показываем сообщение об ошибке
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Critical)
             msg.setText("Ошибка при добавлении товара")
@@ -739,9 +728,9 @@ class Ui_AddTovar(object):
             msg.exec()
 
     def save_tovar_characteristics(self, tovar_id, type_id):
-        """Сохраняет значения характеристик товара в таблицу charvalues"""
+
         try:
-            # Получаем все характеристики для данного типа товара
+
             query = """
             SELECT c.ID, c.Value
             FROM characters c
@@ -752,7 +741,7 @@ class Ui_AddTovar(object):
             c.execute(query, (type_id,))
             characteristics = c.fetchall()
 
-            # Сохраняем значения характеристик в таблицу charvalues
+
             for row in range(self.tovar_characters.rowCount()):
                 if row < len(characteristics):
                     char_id = characteristics[row][0]
@@ -761,7 +750,7 @@ class Ui_AddTovar(object):
                     if value_item:
                         value = value_item.text().strip()
 
-                        # Добавляем запись в таблицу charvalues только если значение не пустое
+
                         if value:
                             insert_query = "INSERT INTO charvalues (TovarID, CharID, Value) VALUES (%s, %s, %s)"
                             c.execute(insert_query, (tovar_id, char_id, value))
@@ -772,9 +761,9 @@ class Ui_AddTovar(object):
             raise e
 
     def save_tovar_characteristics(self, tovar_id, type_id):
-        """Сохраняет значения характеристик товара"""
+
         try:
-            # Получаем все характеристики для данного типа товара
+
             query = """
             SELECT c.ID, c.Value
             FROM characters c
@@ -784,7 +773,7 @@ class Ui_AddTovar(object):
             c.execute(query, (type_id,))
             characteristics = c.fetchall()
 
-            # Сохраняем значения характеристик
+
             for row in range(self.tovar_characters.rowCount()):
                 if row < len(characteristics):
                     char_id = characteristics[row][0]
@@ -793,7 +782,7 @@ class Ui_AddTovar(object):
                     if value_item and value_item.text().strip():
                         value = value_item.text().strip()
 
-                        # Добавляем запись в таблицу charvalues
+
                         insert_query = "INSERT INTO charvalues (TovarID, CharID, Value) VALUES (%s, %s, %s)"
                         c.execute(insert_query, (tovar_id, char_id, value))
                         print(f"Сохранена характеристика: TovarID={tovar_id}, CharID={char_id}, Value={value}")

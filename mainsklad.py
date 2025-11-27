@@ -8,12 +8,12 @@
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from connector import c
-import tovarcreation  # Импортируем файл tovars.py
+import tovarcreation
 
 class Ui_mainsklad(object):
-    # НАСТРОЙКИ БАЗЫ ДАННЫХ - МЕНЯЙТЕ ЗДЕСЬ
+
     DB_CONFIG = {
-        # Таблицы
+
         'table_tovar': 'tovar',
         'table_typetovar': 'typetovar',
         'table_manufacturer': 'manufacturer',
@@ -24,7 +24,7 @@ class Ui_mainsklad(object):
         'table_users': 'users',
         'table_roles': 'roles',
 
-        # Столбцы таблицы tovar
+
         'col_tovar_id': 'ID',
         'col_tovar_name': 'Name',
         'col_tovar_manufacturer_id': 'ManufacturerID',
@@ -34,30 +34,30 @@ class Ui_mainsklad(object):
         'col_tovar_garanty_type_id': 'GarantyTypeID',
         'col_tovar_quantity': 'Quantity',
 
-        # Столбцы таблиц справочников
+
         'col_reference_id': 'ID',
         'col_reference_value': 'Value',
 
-        # Столбцы таблицы typecharlist
+
         'col_typecharlist_type_id': 'TypeID',
         'col_typecharlist_char_id': 'CharID',
 
-        # Столбцы таблицы characters
+
         'col_characters_id': 'ID',
         'col_characters_value': 'Value',
 
-        # Столбцы таблицы charvalues
+
         'col_charvalues_tovar_id': 'TovarID',
         'col_charvalues_char_id': 'CharID',
         'col_charvalues_value': 'Value',
 
-        # Столбцы таблицы users
+
         'col_users_surname': 'Surname',
         'col_users_name': 'Name',
         'col_users_patronymic': 'Patronymic',
         'col_users_role': 'RoleID',
 
-        # Столбцы таблицы roles
+
         'col_roles_id': 'ID',
         'col_roles_value': 'Value'
     }
@@ -79,7 +79,7 @@ class Ui_mainsklad(object):
         self.lineEdit.setGeometry(QtCore.QRect(210, 60, 301, 24))
         self.lineEdit.setObjectName("lineEdit")
 
-        # Подключаем поиск при изменении текста
+
         self.lineEdit.textChanged.connect(self.search_tovar)
 
         self.label_2 = QtWidgets.QLabel(parent=self.centralwidget)
@@ -91,7 +91,7 @@ class Ui_mainsklad(object):
         self.tableWidget.setColumnCount(2)
         self.tableWidget.setRowCount(0)
 
-        # Настраиваем режимы изменения размера для tableWidget
+
         self.tableWidget.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeMode.Stretch)
         self.tableWidget.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeMode.Stretch)
         self.tableWidget.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Fixed)
@@ -106,7 +106,7 @@ class Ui_mainsklad(object):
         self.tableWidget_2.setSelectionMode(QtWidgets.QTableWidget.SelectionMode.SingleSelection)
         self.tableWidget_2.setSelectionBehavior(QtWidgets.QTableWidget.SelectionBehavior.SelectRows)
 
-        # Подключаем сигнал выбора строки
+
         self.tableWidget_2.itemSelectionChanged.connect(self.on_tovar_selected)
 
         self.label_3 = QtWidgets.QLabel(parent=self.centralwidget)
@@ -128,7 +128,7 @@ class Ui_mainsklad(object):
         self.menu = QtWidgets.QMenu(parent=self.menubar)
         self.menu.setObjectName("menu")
 
-        # Создаем действие для меню
+
         self.action_add_tovar = QtGui.QAction(parent=mainsklad)
         self.action_add_tovar.setObjectName("action_add_tovar")
         self.menu.addAction(self.action_add_tovar)
@@ -149,28 +149,28 @@ class Ui_mainsklad(object):
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget_2.setHorizontalHeaderItem(4, item)
 
-        # Устанавливаем заголовки для tableWidget
+
         self.tableWidget.setHorizontalHeaderItem(0, QtWidgets.QTableWidgetItem("Характеристика"))
         self.tableWidget.setHorizontalHeaderItem(1, QtWidgets.QTableWidgetItem("Значение"))
 
-        # Устанавливаем фиксированную высоту строк для tableWidget
+
         self.tableWidget.verticalHeader().setDefaultSectionSize(30)
 
         self.retranslateUi(mainsklad)
         QtCore.QMetaObject.connectSlotsByName(mainsklad)
 
-        # Подключаем обработчик клика на меню
+
         self.action_add_tovar.triggered.connect(self.open_tovars_window)
 
-        # Загружаем данные пользователя после setupUi
+
         self.load_user_data()
 
     def open_tovars_window(self):
-        """Открывает окно добавления товара"""
+
         try:
-            # Создаем новое окно
+
             self.tovars_window = QtWidgets.QMainWindow()
-            # Используем класс Ui_AddTovar из tovarcreation.py
+
             self.tovars_ui = tovarcreation.Ui_AddTovar()
             self.tovars_ui.setupUi(self.tovars_window)
             self.tovars_window.show()
@@ -178,7 +178,7 @@ class Ui_mainsklad(object):
             print("Окно добавления товара открыто")
         except Exception as e:
             print(f"Ошибка при открытии окна добавления товара: {e}")
-            # Если возникла ошибка, показываем сообщение
+
             msg = QtWidgets.QMessageBox()
             msg.setIcon(QtWidgets.QMessageBox.Icon.Warning)
             msg.setText("Не удалось открыть окно добавления товара")
@@ -216,7 +216,7 @@ class Ui_mainsklad(object):
             if user_data:
                 surname, name, patronymic, role_name = user_data
 
-                # Формируем ФИО
+
                 fio = f"{surname} {name} {patronymic}"
                 self.label_4.setText(fio)
                 self.label_6.setText(role_name)
@@ -258,9 +258,9 @@ class Ui_mainsklad(object):
 
         self.tovar_stable()
 
-    # Остальные методы остаются без изменений
+
     def search_tovar(self):
-        """Поиск товаров по артикулу или имени"""
+
         try:
             search_text = self.lineEdit.text().strip()
             search_type = self.comboBox.currentText()
@@ -323,7 +323,7 @@ class Ui_mainsklad(object):
             print(f"Ошибка при поиске: {e}")
 
     def tovar_stable(self):
-        """Заполнение таблицы товаров (все товары)"""
+
         try:
             config = self.DB_CONFIG
 
@@ -363,7 +363,7 @@ class Ui_mainsklad(object):
             print(f"Ошибка при загрузке товаров: {e}")
 
     def on_tovar_selected(self):
-        """Обработчик выбора товара - загружает характеристики выбранного товара"""
+
         try:
             selected_items = self.tableWidget_2.selectedItems()
             if not selected_items:
